@@ -348,6 +348,20 @@
             );
         }
 
+        .qsl-grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 136, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 136, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            z-index: 1;
+            pointer-events: none;
+        }
+
         .qsl-theme-accent {
             position: absolute;
             top: 0;
@@ -772,6 +786,7 @@
                 <div class="qsl-card" id="qslCard">
                     <img class="qsl-bg" id="qslBg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" alt="Background">
                     <div class="qsl-overlay"></div>
+                    <div class="qsl-grid-overlay"></div>
                     <div class="qsl-theme-accent" id="qslThemeAccent"></div>
                     <div class="qsl-card-inner">
                         <div class="qsl-content">
@@ -1069,6 +1084,17 @@
                 qslOverlay.style.background = `linear-gradient(160deg, rgba(${r}, ${g}, ${b}, ${intensity}) 0%, rgba(${r}, ${g}, ${b}, ${intensity * 0.45}) 40%, rgba(${r}, ${g}, ${b}, ${intensity * 0.65}) 70%, rgba(${r}, ${g}, ${b}, ${intensity * 1.1}) 100%)`;
             }
             
+            // Update grid overlay color to match theme
+            const gridOverlay = document.querySelector('.qsl-grid-overlay');
+            if (gridOverlay) {
+                // Use theme's accent or callsign color for grid
+                const gridColor = theme.qslCallsignColor || theme.accent;
+                const gridRgba = hexToRgba(gridColor, 0.03);
+                gridOverlay.style.backgroundImage = 
+                    `linear-gradient(${gridRgba} 1px, transparent 1px),
+                     linear-gradient(90deg, ${gridRgba} 1px, transparent 1px)`;
+            }
+            
             // Update data item borders to match theme
             const dataItems = document.querySelectorAll('.qsl-data-item');
             dataItems.forEach(item => {
@@ -1076,26 +1102,84 @@
                 item.style.borderColor = borderColor;
             });
             
-            // Update main callsign - convert gradient to solid color for preview
+            // Update main callsign - restore gradient for modern theme, solid for others
             const mainCall = document.getElementById('cardMyCall');
             if (mainCall) {
-                mainCall.style.background = 'none';
-                mainCall.style.webkitBackgroundClip = 'unset';
-                mainCall.style.webkitTextFillColor = 'unset';
-                mainCall.style.backgroundClip = 'unset';
-                mainCall.style.color = theme.qslCallsignColor;
-                mainCall.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.4), 0 0 20px ' + hexToRgba(theme.qslCallsignColor, 0.4);
+                if (themeName === 'modern') {
+                    // Restore original beautiful gradient for modern theme
+                    mainCall.style.background = 'linear-gradient(135deg, #ffd700 0%, #ffaa00 25%, #ff6b35 50%, #ffaa00 75%, #ffd700 100%)';
+                    mainCall.style.backgroundSize = '200% 200%';
+                    mainCall.style.webkitBackgroundClip = 'text';
+                    mainCall.style.webkitTextFillColor = 'transparent';
+                    mainCall.style.backgroundClip = 'text';
+                    mainCall.style.color = 'transparent';
+                    mainCall.style.textShadow = 'none';
+                    mainCall.style.filter = 'drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4)) drop-shadow(0 0 30px rgba(255, 170, 0, 0.4))';
+                    mainCall.style.animation = 'shimmerGold 3s ease-in-out infinite';
+                } else {
+                    // Solid color for other themes
+                    mainCall.style.background = 'none';
+                    mainCall.style.webkitBackgroundClip = 'unset';
+                    mainCall.style.webkitTextFillColor = 'unset';
+                    mainCall.style.backgroundClip = 'unset';
+                    mainCall.style.color = theme.qslCallsignColor;
+                    mainCall.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.4), 0 0 20px ' + hexToRgba(theme.qslCallsignColor, 0.4);
+                    mainCall.style.filter = 'none';
+                    mainCall.style.animation = 'none';
+                }
             }
             
-            // Update 73! - convert gradient to solid color for preview
+            // Update 73! - restore gradient for modern theme, solid for others
             const qsl73 = document.querySelector('.qsl-73');
             if (qsl73) {
-                qsl73.style.background = 'none';
-                qsl73.style.webkitBackgroundClip = 'unset';
-                qsl73.style.webkitTextFillColor = 'unset';
-                qsl73.style.backgroundClip = 'unset';
-                qsl73.style.color = theme.qslCallsignColor;
-                qsl73.style.textShadow = '0 1px 3px ' + hexToRgba(theme.qslCallsignColor, 0.5);
+                if (themeName === 'modern') {
+                    // Restore original gradient for modern theme
+                    qsl73.style.background = 'linear-gradient(135deg, #ffd700, #ff6b35, #ffd700)';
+                    qsl73.style.backgroundSize = '200% 200%';
+                    qsl73.style.webkitBackgroundClip = 'text';
+                    qsl73.style.webkitTextFillColor = 'transparent';
+                    qsl73.style.backgroundClip = 'text';
+                    qsl73.style.color = 'transparent';
+                    qsl73.style.textShadow = 'none';
+                    qsl73.style.filter = 'drop-shadow(0 1px 3px rgba(255, 107, 53, 0.5))';
+                    qsl73.style.animation = 'shimmerGold 3s ease-in-out infinite';
+                } else {
+                    // Solid color for other themes
+                    qsl73.style.background = 'none';
+                    qsl73.style.webkitBackgroundClip = 'unset';
+                    qsl73.style.webkitTextFillColor = 'unset';
+                    qsl73.style.backgroundClip = 'unset';
+                    qsl73.style.color = theme.qslCallsignColor;
+                    qsl73.style.textShadow = '0 1px 3px ' + hexToRgba(theme.qslCallsignColor, 0.5);
+                    qsl73.style.filter = 'none';
+                    qsl73.style.animation = 'none';
+                }
+            }
+            
+            // Update DX callsign - restore gradient for modern theme
+            const otherCall = document.querySelector('.qsl-callsign-other');
+            if (otherCall) {
+                if (themeName === 'modern') {
+                    // Restore original white-to-cyan gradient
+                    otherCall.style.background = 'linear-gradient(135deg, #ffffff 0%, #e0f2fe 30%, #7dd3fc 60%, #ffffff 100%)';
+                    otherCall.style.backgroundSize = '200% 200%';
+                    otherCall.style.webkitBackgroundClip = 'text';
+                    otherCall.style.webkitTextFillColor = 'transparent';
+                    otherCall.style.backgroundClip = 'text';
+                    otherCall.style.color = 'transparent';
+                    otherCall.style.filter = 'drop-shadow(0 2px 8px rgba(125, 211, 252, 0.5))';
+                    otherCall.style.animation = 'shimmerWhite 4s ease-in-out infinite';
+                } else {
+                    // Solid white for other themes
+                    otherCall.style.background = 'none';
+                    otherCall.style.webkitBackgroundClip = 'unset';
+                    otherCall.style.webkitTextFillColor = 'unset';
+                    otherCall.style.backgroundClip = 'unset';
+                    otherCall.style.color = '#ffffff';
+                    otherCall.style.textShadow = '0 2px 8px rgba(125, 211, 252, 0.5)';
+                    otherCall.style.filter = 'none';
+                    otherCall.style.animation = 'none';
+                }
             }
             
             // Update data values color
