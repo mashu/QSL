@@ -106,10 +106,22 @@
             background: var(--card-bg);
             border-radius: 20px;
             padding: 32px;
-            border: 1px solid var(--border);
+            border: 2px solid var(--border);
             box-shadow: 
-                0 1px 3px rgba(0, 0, 0, 0.04),
-                0 6px 16px rgba(0, 0, 0, 0.04);
+                0 1px 3px rgba(0, 0, 0, 0.1),
+                0 6px 16px rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        .form-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            border-radius: 20px 20px 0 0;
         }
 
         .form-title {
@@ -178,13 +190,18 @@
         .form-group input:focus,
         .form-group select:focus {
             outline: none;
-            background: white;
+            background: var(--card-bg);
             border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 3px var(--primary-focus-shadow, rgba(37, 99, 235, 0.1));
         }
 
         .form-group input::placeholder {
             color: var(--text-muted);
+        }
+
+        .form-group select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
         }
 
         /* Callsign inputs */
@@ -294,7 +311,7 @@
             position: relative;
             box-shadow: 
                 0 20px 40px rgba(0, 0, 0, 0.15),
-                0 0 0 1px rgba(0, 0, 0, 0.05);
+                0 0 0 2px var(--qsl-card-border, rgba(255, 215, 0, 0.3));
         }
 
         .qsl-card-inner {
@@ -329,6 +346,18 @@
                 rgba(15, 23, 42, 0.4) 65%,
                 rgba(15, 23, 42, 0.85) 100%
             );
+        }
+
+        .qsl-theme-accent {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            background: linear-gradient(135deg, transparent 0%, transparent 50%, rgba(255, 215, 0, 0.2) 100%);
+            border-radius: 0 16px 0 80px;
+            z-index: 1;
+            pointer-events: none;
         }
 
         .qsl-content {
@@ -631,6 +660,16 @@
             <div class="form-panel">
                 <h2 class="form-title">Contact Details</h2>
                 <form class="form-grid" id="qslForm">
+                    <div class="form-group full-width">
+                        <label>Theme</label>
+                        <select id="themeSelect">
+                            <option value="modern" selected>Modern (Default)</option>
+                            <option value="dark">Dark Mode</option>
+                            <option value="retro">Retro Vintage</option>
+                            <option value="ocean">Ocean Blue</option>
+                            <option value="forest">Forest Green</option>
+                        </select>
+                    </div>
                     <div class="form-group callsign-input">
                         <label>Your Callsign</label>
                         <input type="text" id="myCallsign" value="SA0KAM" placeholder="Your callsign">
@@ -733,6 +772,7 @@
                 <div class="qsl-card" id="qslCard">
                     <img class="qsl-bg" id="qslBg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg'%3E%3C/svg%3E" alt="Background">
                     <div class="qsl-overlay"></div>
+                    <div class="qsl-theme-accent" id="qslThemeAccent"></div>
                     <div class="qsl-card-inner">
                         <div class="qsl-content">
                             <div class="qsl-header">
@@ -861,6 +901,273 @@
 
         loadBackgroundImage();
 
+        // Theme definitions
+        const themes = {
+            modern: {
+                name: 'Modern (Default)',
+                primary: '#2563eb',
+                primaryDark: '#1d4ed8',
+                primaryLight: '#3b82f6',
+                accent: '#f59e0b',
+                accentDark: '#d97706',
+                success: '#10b981',
+                bgMain: '#f8fafc',
+                bgSubtle: '#f1f5f9',
+                cardBg: '#ffffff',
+                textPrimary: '#0f172a',
+                textSecondary: '#475569',
+                textMuted: '#94a3b8',
+                border: '#e2e8f0',
+                borderDark: '#cbd5e1',
+                bgPattern: 'linear-gradient(135deg, rgba(37, 99, 235, 0.03) 0%, transparent 50%), linear-gradient(225deg, rgba(245, 158, 11, 0.03) 0%, transparent 50%)',
+                qslCardBg: '#1e293b',
+                qslCallsignColor: '#ffd700',
+                qslDataValueColor: '#ffd700',
+                qslOverlayIntensity: 0.75
+            },
+            dark: {
+                name: 'Dark Mode',
+                primary: '#8b5cf6',
+                primaryDark: '#7c3aed',
+                primaryLight: '#a78bfa',
+                accent: '#fbbf24',
+                accentDark: '#f59e0b',
+                success: '#34d399',
+                bgMain: '#0a0a0f',
+                bgSubtle: '#1a1a2e',
+                cardBg: '#1a1a2e',
+                textPrimary: '#e2e8f0',
+                textSecondary: '#cbd5e1',
+                textMuted: '#94a3b8',
+                border: '#2d3748',
+                borderDark: '#4a5568',
+                bgPattern: 'linear-gradient(135deg, rgba(139, 92, 246, 0.2) 0%, transparent 50%), linear-gradient(225deg, rgba(251, 191, 36, 0.2) 0%, transparent 50%)',
+                qslCardBg: '#1a0a2e',
+                qslCallsignColor: '#a78bfa',
+                qslDataValueColor: '#34d399',
+                qslOverlayIntensity: 0.8
+            },
+            retro: {
+                name: 'Retro Vintage',
+                primary: '#dc2626',
+                primaryDark: '#b91c1c',
+                primaryLight: '#ef4444',
+                accent: '#f59e0b',
+                accentDark: '#d97706',
+                success: '#dc2626',
+                bgMain: '#fef9e7',
+                bgSubtle: '#fef3c7',
+                cardBg: '#fffbeb',
+                textPrimary: '#78350f',
+                textSecondary: '#92400e',
+                textMuted: '#a16207',
+                border: '#fcd34d',
+                borderDark: '#fbbf24',
+                bgPattern: 'linear-gradient(135deg, rgba(220, 38, 38, 0.12) 0%, transparent 50%), linear-gradient(225deg, rgba(245, 158, 11, 0.12) 0%, transparent 50%)',
+                qslCardBg: '#3d1f1f',
+                qslCallsignColor: '#fbbf24',
+                qslDataValueColor: '#ef4444',
+                qslOverlayIntensity: 0.7
+            },
+            ocean: {
+                name: 'Ocean Blue',
+                primary: '#0891b2',
+                primaryDark: '#0e7490',
+                primaryLight: '#06b6d4',
+                accent: '#06b6d4',
+                accentDark: '#0891b2',
+                success: '#10b981',
+                bgMain: '#ecfeff',
+                bgSubtle: '#cffafe',
+                cardBg: '#ffffff',
+                textPrimary: '#0c4a6e',
+                textSecondary: '#075985',
+                textMuted: '#0284c7',
+                border: '#bae6fd',
+                borderDark: '#7dd3fc',
+                bgPattern: 'linear-gradient(135deg, rgba(8, 145, 178, 0.05) 0%, transparent 50%), linear-gradient(225deg, rgba(6, 182, 212, 0.05) 0%, transparent 50%)',
+                qslCardBg: '#0a1a2e',
+                qslCallsignColor: '#7dd3fc',
+                qslDataValueColor: '#06b6d4',
+                qslOverlayIntensity: 0.75
+            },
+            forest: {
+                name: 'Forest Green',
+                primary: '#059669',
+                primaryDark: '#047857',
+                primaryLight: '#10b981',
+                accent: '#f59e0b',
+                accentDark: '#d97706',
+                success: '#10b981',
+                bgMain: '#f0fdf4',
+                bgSubtle: '#dcfce7',
+                cardBg: '#ffffff',
+                textPrimary: '#064e3b',
+                textSecondary: '#065f46',
+                textMuted: '#047857',
+                border: '#bbf7d0',
+                borderDark: '#86efac',
+                bgPattern: 'linear-gradient(135deg, rgba(5, 150, 105, 0.05) 0%, transparent 50%), linear-gradient(225deg, rgba(16, 185, 129, 0.05) 0%, transparent 50%)',
+                qslCardBg: '#0a2e1a',
+                qslCallsignColor: '#86efac',
+                qslDataValueColor: '#34d399',
+                qslOverlayIntensity: 0.75
+            }
+        };
+
+        // Apply theme
+        function applyTheme(themeName) {
+            const theme = themes[themeName] || themes.modern;
+            const root = document.documentElement;
+            
+            root.style.setProperty('--primary', theme.primary);
+            root.style.setProperty('--primary-dark', theme.primaryDark);
+            root.style.setProperty('--primary-light', theme.primaryLight);
+            root.style.setProperty('--accent', theme.accent);
+            root.style.setProperty('--accent-dark', theme.accentDark);
+            root.style.setProperty('--success', theme.success);
+            root.style.setProperty('--bg-main', theme.bgMain);
+            root.style.setProperty('--bg-subtle', theme.bgSubtle);
+            root.style.setProperty('--card-bg', theme.cardBg);
+            root.style.setProperty('--text-primary', theme.textPrimary);
+            root.style.setProperty('--text-secondary', theme.textSecondary);
+            root.style.setProperty('--text-muted', theme.textMuted);
+            root.style.setProperty('--border', theme.border);
+            root.style.setProperty('--border-dark', theme.borderDark);
+            
+            // Set focus shadow color based on primary color
+            const focusShadow = hexToRgba(theme.primary, 0.1);
+            root.style.setProperty('--primary-focus-shadow', focusShadow);
+            
+            // Store current theme for PDF generation
+            window.currentTheme = theme;
+            
+            // Update background pattern
+            const bgPattern = document.querySelector('.bg-pattern');
+            if (bgPattern) {
+                bgPattern.style.background = theme.bgPattern;
+            }
+            
+            // Update QSL card background
+            const qslCard = document.getElementById('qslCard');
+            if (qslCard) {
+                qslCard.style.backgroundColor = theme.qslCardBg;
+                // Set border color based on theme accent
+                const borderColor = hexToRgba(theme.accent, 0.4);
+                root.style.setProperty('--qsl-card-border', borderColor);
+            }
+            
+            // Update QSL card overlay to match theme
+            const qslOverlay = document.querySelector('.qsl-overlay');
+            if (qslOverlay) {
+                // Create overlay that works with the theme's card background
+                const overlayColor = theme.qslCardBg;
+                const r = parseInt(overlayColor.slice(1, 3), 16);
+                const g = parseInt(overlayColor.slice(3, 5), 16);
+                const b = parseInt(overlayColor.slice(5, 7), 16);
+                const intensity = theme.qslOverlayIntensity || 0.75;
+                qslOverlay.style.background = `linear-gradient(160deg, rgba(${r}, ${g}, ${b}, ${intensity}) 0%, rgba(${r}, ${g}, ${b}, ${intensity * 0.45}) 40%, rgba(${r}, ${g}, ${b}, ${intensity * 0.65}) 70%, rgba(${r}, ${g}, ${b}, ${intensity * 1.1}) 100%)`;
+            }
+            
+            // Update data item borders to match theme
+            const dataItems = document.querySelectorAll('.qsl-data-item');
+            dataItems.forEach(item => {
+                const borderColor = hexToRgba(theme.qslDataValueColor, 0.3);
+                item.style.borderColor = borderColor;
+            });
+            
+            // Update main callsign - convert gradient to solid color for preview
+            const mainCall = document.getElementById('cardMyCall');
+            if (mainCall) {
+                mainCall.style.background = 'none';
+                mainCall.style.webkitBackgroundClip = 'unset';
+                mainCall.style.webkitTextFillColor = 'unset';
+                mainCall.style.backgroundClip = 'unset';
+                mainCall.style.color = theme.qslCallsignColor;
+                mainCall.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.4), 0 0 20px ' + hexToRgba(theme.qslCallsignColor, 0.4);
+            }
+            
+            // Update 73! - convert gradient to solid color for preview
+            const qsl73 = document.querySelector('.qsl-73');
+            if (qsl73) {
+                qsl73.style.background = 'none';
+                qsl73.style.webkitBackgroundClip = 'unset';
+                qsl73.style.webkitTextFillColor = 'unset';
+                qsl73.style.backgroundClip = 'unset';
+                qsl73.style.color = theme.qslCallsignColor;
+                qsl73.style.textShadow = '0 1px 3px ' + hexToRgba(theme.qslCallsignColor, 0.5);
+            }
+            
+            // Update data values color
+            const dataValues = document.querySelectorAll('.qsl-data-value');
+            dataValues.forEach(el => {
+                el.style.color = theme.qslDataValueColor;
+            });
+            
+            // Update RST values color
+            const rstValues = document.querySelectorAll('.qsl-rst-value');
+            rstValues.forEach(el => {
+                el.style.color = theme.qslCallsignColor;
+            });
+            
+            // Update badge color
+            const badge = document.querySelector('.qsl-badge');
+            if (badge) {
+                badge.style.background = theme.accent;
+            }
+            
+            // Update theme accent corner
+            const themeAccent = document.getElementById('qslThemeAccent');
+            if (themeAccent) {
+                const accentColor = hexToRgba(theme.accent, 0.3);
+                themeAccent.style.background = `linear-gradient(135deg, transparent 0%, transparent 50%, ${accentColor} 100%)`;
+            }
+            
+            // Fix form inputs for dark mode - ensure proper contrast
+            const formInputs = document.querySelectorAll('.form-group input, .form-group select');
+            formInputs.forEach(input => {
+                if (themeName === 'dark') {
+                    input.style.background = '#2d3748';
+                    input.style.color = '#e2e8f0';
+                    input.style.borderColor = '#4a5568';
+                } else {
+                    input.style.background = '';
+                    input.style.color = '';
+                    input.style.borderColor = '';
+                }
+            });
+            
+            // Fix upload button for dark mode
+            const uploadBtn = document.querySelector('.upload-btn');
+            if (uploadBtn) {
+                if (themeName === 'dark') {
+                    uploadBtn.style.background = '#2d3748';
+                    uploadBtn.style.color = '#e2e8f0';
+                    uploadBtn.style.borderColor = '#4a5568';
+                } else {
+                    uploadBtn.style.background = '';
+                    uploadBtn.style.color = '';
+                    uploadBtn.style.borderColor = '';
+                }
+            }
+        }
+
+        // Helper function to convert hex to rgba
+        function hexToRgba(hex, alpha) {
+            const r = parseInt(hex.slice(1, 3), 16);
+            const g = parseInt(hex.slice(3, 5), 16);
+            const b = parseInt(hex.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+        }
+
+        // Theme selector event listener
+        document.getElementById('themeSelect').addEventListener('change', function(e) {
+            applyTheme(e.target.value);
+        });
+
+        // Apply default theme
+        applyTheme('modern');
+
         document.getElementById('date').valueAsDate = new Date();
         
         const now = new Date();
@@ -919,11 +1226,14 @@
                 // Wait a moment for any animations to settle
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
+                // Get current theme (use stored theme or fallback)
+                const currentTheme = window.currentTheme || themes.modern;
+                
                 const canvas = await html2canvas(card, {
                     scale: 3,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#1e293b',
+                    backgroundColor: currentTheme.qslCardBg,
                     logging: false,
                     imageTimeout: 15000,
                     onclone: (clonedDoc) => {
@@ -934,15 +1244,23 @@
                             clonedBg.style.display = 'block';
                         }
                         
-                        // Fix gradient text for html2canvas - convert to solid colors
+                        // Update QSL card background
+                        const clonedCard = clonedDoc.getElementById('qslCard');
+                        if (clonedCard) {
+                            clonedCard.style.backgroundColor = currentTheme.qslCardBg;
+                        }
+                        
+                        // Fix gradient text for html2canvas - convert to solid colors using theme
                         const mainCall = clonedDoc.querySelector('.qsl-callsign-main');
                         if (mainCall) {
                             mainCall.style.background = 'none';
                             mainCall.style.webkitBackgroundClip = 'unset';
                             mainCall.style.webkitTextFillColor = 'unset';
                             mainCall.style.backgroundClip = 'unset';
-                            mainCall.style.color = '#ffd700';
-                            mainCall.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 170, 0, 0.4)';
+                            mainCall.style.color = currentTheme.qslCallsignColor;
+                            const glowColor = hexToRgba(currentTheme.qslCallsignColor, 0.4);
+                            mainCall.style.textShadow = `0 2px 4px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}`;
+                            mainCall.style.fontFamily = "'Black Ops One', 'Teko', sans-serif";
                         }
                         
                         const otherCall = clonedDoc.querySelector('.qsl-callsign-other');
@@ -953,6 +1271,7 @@
                             otherCall.style.backgroundClip = 'unset';
                             otherCall.style.color = '#ffffff';
                             otherCall.style.textShadow = '0 2px 8px rgba(125, 211, 252, 0.5)';
+                            otherCall.style.fontFamily = "'Teko', sans-serif";
                         }
                         
                         const qsl73 = clonedDoc.querySelector('.qsl-73');
@@ -961,9 +1280,18 @@
                             qsl73.style.webkitBackgroundClip = 'unset';
                             qsl73.style.webkitTextFillColor = 'unset';
                             qsl73.style.backgroundClip = 'unset';
-                            qsl73.style.color = '#ffd700';
-                            qsl73.style.textShadow = '0 1px 3px rgba(255, 107, 53, 0.5)';
+                            qsl73.style.color = currentTheme.qslCallsignColor;
+                            const glowColor73 = hexToRgba(currentTheme.qslCallsignColor, 0.5);
+                            qsl73.style.textShadow = `0 1px 3px ${glowColor73}`;
+                            qsl73.style.fontFamily = "'Black Ops One', sans-serif";
                         }
+                        
+                        // Update data values color
+                        const dataValues = clonedDoc.querySelectorAll('.qsl-data-value');
+                        dataValues.forEach(el => {
+                            el.style.color = currentTheme.qslDataValueColor;
+                            el.style.fontFamily = "'Teko', sans-serif";
+                        });
                     }
                 });
                 
@@ -1003,11 +1331,14 @@
                 // Wait a moment for any animations to settle
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
+                // Get current theme (use stored theme or fallback)
+                const currentTheme = window.currentTheme || themes.modern;
+                
                 const canvas = await html2canvas(card, {
                     scale: 3,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#1e293b',
+                    backgroundColor: currentTheme.qslCardBg,
                     logging: false,
                     imageTimeout: 15000,
                     onclone: (clonedDoc) => {
@@ -1018,15 +1349,23 @@
                             clonedBg.style.display = 'block';
                         }
                         
-                        // Fix gradient text for html2canvas - convert to solid colors
+                        // Update QSL card background
+                        const clonedCard = clonedDoc.getElementById('qslCard');
+                        if (clonedCard) {
+                            clonedCard.style.backgroundColor = currentTheme.qslCardBg;
+                        }
+                        
+                        // Fix gradient text for html2canvas - convert to solid colors using theme
                         const mainCall = clonedDoc.querySelector('.qsl-callsign-main');
                         if (mainCall) {
                             mainCall.style.background = 'none';
                             mainCall.style.webkitBackgroundClip = 'unset';
                             mainCall.style.webkitTextFillColor = 'unset';
                             mainCall.style.backgroundClip = 'unset';
-                            mainCall.style.color = '#ffd700';
-                            mainCall.style.textShadow = '0 2px 4px rgba(0, 0, 0, 0.4), 0 0 30px rgba(255, 170, 0, 0.4)';
+                            mainCall.style.color = currentTheme.qslCallsignColor;
+                            const glowColor = hexToRgba(currentTheme.qslCallsignColor, 0.4);
+                            mainCall.style.textShadow = `0 2px 4px rgba(0, 0, 0, 0.4), 0 0 20px ${glowColor}`;
+                            mainCall.style.fontFamily = "'Black Ops One', 'Teko', sans-serif";
                         }
                         
                         const otherCall = clonedDoc.querySelector('.qsl-callsign-other');
@@ -1037,6 +1376,7 @@
                             otherCall.style.backgroundClip = 'unset';
                             otherCall.style.color = '#ffffff';
                             otherCall.style.textShadow = '0 2px 8px rgba(125, 211, 252, 0.5)';
+                            otherCall.style.fontFamily = "'Teko', sans-serif";
                         }
                         
                         const qsl73 = clonedDoc.querySelector('.qsl-73');
@@ -1045,9 +1385,18 @@
                             qsl73.style.webkitBackgroundClip = 'unset';
                             qsl73.style.webkitTextFillColor = 'unset';
                             qsl73.style.backgroundClip = 'unset';
-                            qsl73.style.color = '#ffd700';
-                            qsl73.style.textShadow = '0 1px 3px rgba(255, 107, 53, 0.5)';
+                            qsl73.style.color = currentTheme.qslCallsignColor;
+                            const glowColor73 = hexToRgba(currentTheme.qslCallsignColor, 0.5);
+                            qsl73.style.textShadow = `0 1px 3px ${glowColor73}`;
+                            qsl73.style.fontFamily = "'Black Ops One', sans-serif";
                         }
+                        
+                        // Update data values color
+                        const dataValues = clonedDoc.querySelectorAll('.qsl-data-value');
+                        dataValues.forEach(el => {
+                            el.style.color = currentTheme.qslDataValueColor;
+                            el.style.fontFamily = "'Teko', sans-serif";
+                        });
                     }
                 });
                 
